@@ -1,32 +1,39 @@
-import { useState,useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import{QueryClient, QueryClientProvider, useQuery} from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
+async function getter() {
+  const data = await fetch("https://jsonplaceholder.typicode.com/posts/");
+  const response = await data.json();
+  return response;
+}
 
 function App() {
-  const [posts, setPosts] = useState([])
+  return (
+    // Provide the client to your App
+    <QueryClientProvider client={queryClient}>
+      <Posts />
+    </QueryClientProvider>
+  )
+}
 
-  async function getPosts() {
-    try {
-      const response = await fetch("https://jsonplaceholder.typicode.com/posts/")
-      const json = await response.json()
-      setPosts(json)
-    } catch(e) {
-      
-    }
-    
+
+function Posts() {
+  // const queryClient = useQueryCleint()
+  const {data, isLoading, error} = useQuery({queryKey: ['posts'], queryFn: getter})
+
+  if (error) {
+    return <div>
+      Error while fetching
+    </div>
   }
 
-  useEffect(()=> {
-    getPosts()
-  },[])
+  if (isLoading) {
+    return "Loading...."
+  }
 
-  return (
-    <>
-      {/* {JSON.stringify(posts)} */}
-      {posts.map(post=><div>{post.title}</div>)}
-    </>
-  )
+  return <div>
+    {JSON.stringify(data)}
+  </div>
 }
 
 export default App
